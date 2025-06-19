@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  lexa:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - LEXA_DB_HOST=db
+      - LEXA_DB_PORT=5432
+      - LEXA_DB_NAME=lexa_prod
+      - LEXA_DB_USER=lexa_user
+      - LEXA_DB_PASSWORD=${DB_PASSWORD}
+      - LEXA_JWT_SECRET=${JWT_SECRET}
+      - LEXA_LICENSE_KEY=${LICENSE_KEY}
+      - LEXA_ENV=production
+    depends_on:
+      - db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - lexa_data:/app/data
+      - lexa_models:/root/.cache/spacy  # For spaCy models
+
+  db:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_DB=lexa_prod
+      - POSTGRES_USER=lexa_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lexa_user -d lexa_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - lexa
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  lexa_data:
+  lexa_models:
