@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEXA - Linguistic Excellence Analysis Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // Text analysis form handling
+            const analyzeButtons = document.querySelectorAll('.analyze-btn');
+            analyzeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    showAnalyzeModal();
+                });
+            });
+
+            // Modal handling
+            function showAnalyzeModal() {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center p-4 opacity-0 transition-opacity duration-300';
+                modal.id = 'analyze-modal';
+                
+                const textArea = document.createElement('textarea');
+                textArea.id = 'demo-text';
+                textArea.className = 'w-full p-4 border border-gray-200 rounded-lg mb-4 h-32 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none transition-all';
+                textArea.placeholder = 'Enter your academic text here (minimum 50 characters)...';
+                
+                modal.innerHTML = `
+                    <div class="bg-white rounded-xl p-6 max-w-lg w-full transform scale-95 transition-all duration-300">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold">Analyze Your Text</h3>
+                            <button class="text-gray-400 hover:text-black transition-colors" onclick="closeModal()">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        ${textArea.outerHTML}
+                        <div class="text-sm text-gray-500 mb-4">
+                            Enter at least 50 characters for meaningful analysis
+                        </div>
+                        <div class="flex justify-end gap-4">
+                            <button class="px-4 py-2 text-gray-600 hover:text-black transition-colors" onclick="closeModal()">Cancel</button>
+                            <button class="bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all" onclick="analyzeText(this)">
+                                Analyze
+                            </button>
+                        </div>
+                        <div id="analysis-results"></div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                setTimeout(() => {
+                    modal.style.opacity = '1';
+                    modal.querySelector('.bg-white').style.transform = 'scale(1)';
+                    textArea.focus();
+                }, 50);
+
+                // Handle Escape key
+                document.addEventListener('keydown', handleEscapeKey);
+                
+                // Handle click outside modal
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) closeModal();
+                });
+            }
+
+            function closeModal() {
+                const modal = document.getElementById('analyze-modal');
+                if (!modal) return;
+                
+                modal.style.opacity = '0';
+                modal.querySelector('.bg-white').style.transform = 'scale(95%)';
+                
+                setTimeout(() => {
+                    modal.remove();
+                    document.removeEventListener('keydown', handleEscapeKey);
+                }, 300);
+            }
+
+            function handleEscapeKey(e) {
+                if (e.key === 'Escape') closeModal();
+            }
+
+            // Text analysis simulation
+            window.analyzeText = function(button) {
+                const text = document.getElementById('demo-text').value.trim();
+                const resultsDiv = document.getElementById('analysis-results');
+                
+                if (text.length < 50) {
+                    resultsDiv.innerHTML = `
+                        <div class="mt-4 p-4 bg-red-50 text-red-600 rounded-lg text-sm">
+                            Please enter at least 50 characters for meaningful analysis.
+                        </div>
+                    `;
+                    return;
+                }
+
+                button.disabled = true;
+                button.innerHTML = '<span class="inline-block animate-spin mr-2">↻</span> Analyzing...';
+                
+                resultsDiv.innerHTML = `
+                    <div class="mt-4">
+                        <div class="animate-pulse space-y-3">
+                            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                            <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+                        </div>
+                    </div>
+                `;
+                
+                setTimeout(() => {
+                    const readabilityScore = Math.floor(Math.random() * 20) + 80;
+                    const wordCount = text.split(/\s+/).length;
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="mt-6 p-6 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100">
+                            <h4 class="font-semibold mb-4 text-lg">Analysis Results</h4>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div class="p-4 bg-white rounded-lg shadow-sm">
+                                    <div class="text-sm text-gray-500 mb-1">Readability Score</div>
+                                    <div class="text-2xl font-bold text-[var(--primary-color)]">${readabilityScore}/100</div>
+                                </div>
+                                <div class="p-4 bg-white rounded-lg shadow-sm">
+                                    <div class="text-sm text-gray-500 mb-1">Word Count</div>
+                                    <div class="text-2xl font-bold text-[var(--primary-color)]">${wordCount}</div>
+                                </div>
+                            </div>
+                            <div class="mt-4 space-y-3">
+                                <div class="flex items-center gap-2 text-sm">
+                                    <span class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white">✓</span>
+                                    <span>Academic style is appropriate for scholarly writing</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm">
+                                    <span class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white">✓</span>
+                                    <span>Grammar and syntax meet academic standards</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm">
+                                    <span class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white">✓</span>
+                                    <span>Vocabulary demonstrates advanced academic proficiency</span>
+                                </div>
+                            </div>
+                            <button onclick="closeModal()" class="mt-6 w-full bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all">
+                                Done
+                            </button>
+                        </div>
+                    `;
+                    button.disabled = false;
+                    button.innerHTML = 'Analyze';
+                }, 2000);
+            };
+        });
+    </script>
+    <style>
+        :root {
+            --primary-color: #1E1E1E;
+            --secondary-color: #2D2D2D;
+            --accent-color: #4A4A4A;
+            --highlight: #3B3B3B;
+            --background-light: #FFFFFF;
+            --background-dark: #F5F5F5;
+            --text-primary: #1E1E1E;
+            --text-secondary: #4B5563;
+            --gradient-start: #1E1E1E;
+            --gradient-end: #3B3B3B;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-gradient::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="%23000000" opacity="0.05"/></svg>') repeat;
+            opacity: 0.5;
+        }
+        
+        .feature-card {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+        
+        .number-circle {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .number-circle::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .number-circle:hover::after {
+            opacity: 1;
+        }
+        
+        .cta-gradient {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-gradient::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
+            top: -50%;
+            left: -50%;
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .btn-hover {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-hover:hover::before {
+            left: 100%;
+        }
+        
+        .section-title {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <!-- Navigation -->
+    <nav class="fixed w-full bg-white/90 backdrop-blur-sm z-50 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] rounded-lg flex items-center justify-center transform rotate-12 shadow-lg relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <span class="text-white text-2xl font-bold transform -rotate-12">L</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-2xl font-bold bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent tracking-tight">LEXA</span>
+                            <span class="text-xs text-[var(--text-secondary)] tracking-wider">LINGUISTIC EXCELLENCE</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-gray-700 hover:text-black">Features</a>
+                    <a href="#how-it-works" class="text-gray-700 hover:text-black">How It Works</a>
+                    <a href="#benefits" class="text-gray-700 hover:text-black">Benefits</a>
+                <button class="analyze-btn bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white px-6 py-2 rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300">
+                    Get Started
+                </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 hero-gradient">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="text-5xl font-bold text-black mb-6">
+                    Advanced Linguistic Analysis for Academic Excellence
+                </h1>
+                <p class="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
+                    Elevate your academic writing with our sophisticated linguistic analysis platform. 
+                    Get detailed insights and recommendations to enhance your scholarly work.
+                </p>
+                <button class="analyze-btn bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] text-white px-8 py-4 rounded-lg text-lg font-semibold hover:shadow-xl hover:scale-105 transition-all duration-300">
+                    Start Analyzing Now
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-16 section-title">Powerful Features for Academic Excellence</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="p-8 bg-gradient-to-br from-white to-[var(--background-dark)] rounded-xl hover:shadow-2xl transition-all duration-300 feature-card relative group overflow-hidden border border-gray-100">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-[var(--gradient-start)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] rounded-lg flex items-center justify-center mb-6 transform transition-transform group-hover:scale-110 shadow-lg">
+                            <span class="text-2xl text-white">📊</span>
+                        </div>
+                    <h3 class="text-xl font-semibold mb-3">Comprehensive Analysis</h3>
+                    <p class="text-gray-600">
+                        Get detailed insights into readability, coherence, and academic style through our advanced linguistic algorithms.
+                    </p>
+                </div>
+                <div class="p-8 bg-gradient-to-br from-white to-[var(--background-dark)] rounded-xl hover:shadow-2xl transition-all duration-300 feature-card relative group overflow-hidden border border-gray-100">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-[var(--gradient-start)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] rounded-lg flex items-center justify-center mb-6 transform transition-transform group-hover:scale-110 shadow-lg">
+                            <span class="text-2xl text-white">🎯</span>
+                        </div>
+                    <h3 class="text-xl font-semibold mb-3">Smart Recommendations</h3>
+                    <p class="text-gray-600">
+                        Receive tailored suggestions to improve your writing based on academic standards and best practices.
+                    </p>
+                </div>
+                <div class="p-8 bg-gradient-to-br from-white to-[var(--background-dark)] rounded-xl hover:shadow-2xl transition-all duration-300 feature-card relative group overflow-hidden border border-gray-100">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-[var(--gradient-start)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="relative z-10">
+                        <div class="w-16 h-16 bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] rounded-lg flex items-center justify-center mb-6 transform transition-transform group-hover:scale-110 shadow-lg">
+                            <span class="text-2xl text-white">📈</span>
+                        </div>
+                    <h3 class="text-xl font-semibold mb-3">Progress Tracking</h3>
+                    <p class="text-gray-600">
+                        Monitor your writing improvement over time with detailed analytics and progress reports.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-16 section-title">How LEXA Works</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] text-white rounded-full flex items-center justify-center mx-auto mb-6 text-xl shadow-lg relative overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <span class="relative z-10">1</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Submit Your Text</h3>
+                    <p class="text-gray-600">
+                        Upload your academic writing for analysis through our intuitive interface.
+                    </p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center mx-auto mb-6 text-xl">2</div>
+                    <h3 class="text-xl font-semibold mb-3">Advanced Analysis</h3>
+                    <p class="text-gray-600">
+                        Our AI-powered system analyzes your text across multiple dimensions.
+                    </p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center mx-auto mb-6 text-xl">3</div>
+                    <h3 class="text-xl font-semibold mb-3">Get Insights</h3>
+                    <p class="text-gray-600">
+                        Receive detailed feedback and actionable recommendations for improvement.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section id="benefits" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-16 section-title">Why Choose LEXA</h2>
+            <div class="grid md:grid-cols-2 gap-12">
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] text-white rounded-lg flex items-center justify-center shadow-lg relative overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <span class="relative z-10">✓</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Academic Excellence</h3>
+                        <p class="text-gray-600">
+                            Enhance your scholarly writing with expert analysis and recommendations based on academic standards.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] text-white rounded-lg flex items-center justify-center shadow-lg relative overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <span class="relative z-10">✓</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Time-Saving</h3>
+                        <p class="text-gray-600">
+                            Get instant feedback and suggestions, allowing you to focus on your research and ideas.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] text-white rounded-lg flex items-center justify-center shadow-lg relative overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <span class="relative z-10">✓</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Comprehensive Analysis</h3>
+                        <p class="text-gray-600">
+                            Benefit from multi-dimensional analysis covering style, structure, and academic conventions.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] text-white rounded-lg flex items-center justify-center shadow-lg relative overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <span class="relative z-10">✓</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Continuous Improvement</h3>
+                        <p class="text-gray-600">
+                            Track your progress and see your writing improve with each analysis.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 cta-gradient text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl font-bold mb-6">Ready to Elevate Your Academic Writing?</h2>
+            <p class="text-xl mb-10 max-w-2xl mx-auto">
+                Join thousands of researchers and students who trust LEXA for their academic writing needs.
+            </p>
+            <button class="bg-white text-black px-8 py-4 rounded-lg text-lg font-semibold btn-hover shadow-lg">
+                Get Started Now
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-16 bg-gradient-to-b from-white to-[var(--background-dark)]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-12">
+                <div>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-8 h-8 bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] rounded-lg flex items-center justify-center transform rotate-12 shadow-lg">
+                            <span class="text-white text-lg font-bold transform -rotate-12">L</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xl font-bold bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)] bg-clip-text text-transparent">LEXA</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">
+                        Advanced linguistic analysis for academic excellence.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-6 text-black">Features</h3>
+                    <ul class="space-y-3 text-gray-600">
+                        <li>Text Analysis</li>
+                        <li>Smart Recommendations</li>
+                        <li>Progress Tracking</li>
+                        <li>Academic Standards</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-6 text-black">Resources</h3>
+                    <ul class="space-y-3 text-gray-600">
+                        <li>Documentation</li>
+                        <li>API Reference</li>
+                        <li>Support</li>
+                        <li>Blog</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-6 text-black">Contact</h3>
+                    <ul class="space-y-3 text-gray-600">
+                        <li>info@lexa.ai</li>
+                        <li>+1 (555) 123-4567</li>
+                        <li>123 Academic Ave</li>
+                        <li>Research City, RC 12345</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-16 pt-8 border-t border-gray-200/50 text-center">
+                <p class="text-[var(--text-secondary)] text-sm">&copy; 2024 LEXA. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
